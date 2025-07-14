@@ -1,0 +1,80 @@
+package controller;
+
+import java.io.*;
+import java.sql.*;
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+@WebServlet("/ExportExcelServlet")
+public class ExportExcelServlet extends HttpServlet {
+
+    // ✅ Allow GET requests too
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        exportToExcel(response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        exportToExcel(response);
+    }
+
+    private void exportToExcel(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=TenderData.xlsx");
+
+        try (
+            Workbook workbook = new XSSFWorkbook();
+            OutputStream out = response.getOutputStream()
+        ) {
+            Sheet sheet = workbook.createSheet("Tenders");
+
+            // Create header row
+            Row header = sheet.createRow(0);
+            String[] columns = {
+                "ID", "Tenderer Type", "Full Name", "Mobile", "Email",
+                "Goods Type", "Goods Demand", "Sale Rate"
+            };
+            for (int i = 0; i < columns.length; i++) {
+                header.createCell(i).setCellValue(columns[i]);
+            }
+
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Connection conn = DriverManager.getConnection(
+                "jdbc:oracle:thin:@localhost:1521:XE", "SYSTEM", "yash"
+            );
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(
+                "SELECT id, tenderer_type, full_name, mobile, email, goods_type, goods_demand, sale_rate FROM tender_data"
+            );
+
+            int rowIdx = 1;
+            while (rs.next()) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(rs.getInt("id"));
+                row.createCell(1).setCellValue(rs.getString("tenderer_type"));
+                row.createCell(2).setCellValue(rs.getString("full_name"));
+                row.createCell(3).setCellValue(rs.getString("mobile"));
+                row.createCell(4).setCellValue(rs.getString("email"));
+                row.createCell(5).setCellValue(rs.getString("goods_type"));
+                row.createCell(6).setCellValue(rs.getString("goods_demand"));
+                row.createCell(7).setCellValue(rs.getString("sale_rate"));
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            workbook.write(out);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setContentType("text/html");
+            response.getWriter().println("<script>alert('Error exporting to Excel. Check logs.'); history.back();</script>");
+        }
+    }
+}
