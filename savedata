@@ -1,0 +1,114 @@
+package controller;
+
+import java.io.*;
+import java.sql.*;
+import java.util.Enumeration;
+
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
+
+@WebServlet("/savedata")
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 512,  // 512 KB before writing to disk
+    maxFileSize = 1024 * 1024,       // 1 MB per file
+    maxRequestSize = 5 * 1024 * 1024 // 5 MB total request
+)
+public class savedata extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
+        PrintWriter out = response.getWriter();
+        Enumeration<String> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String param = paramNames.nextElement();
+            System.out.println("Field: " + param + " = " + request.getParameter(param));
+        }
+        Part photoPart = request.getPart("photo");
+
+        try {
+            // Read all text fields
+            String first = request.getParameter("first_name");
+            String middle = request.getParameter("middle_name");
+            String last = request.getParameter("last_name");
+            String full = first + " " + middle + " " + last;
+            String mobile = request.getParameter("mobile_number");
+            String email = request.getParameter("email");
+            String password = request.getParameter("password");
+            String confirm = request.getParameter("confirmPassword");
+
+            // Basic validation
+            if (password == null || confirm == null || password.isEmpty() || confirm.isEmpty()) {
+                out.println("<script>alert('Please fill in both password fields!');history.back();</script>");
+                return;
+            }
+            if (!password.equals(confirm)) {
+                out.println("<script>alert('Passwords do not match!');history.back();</script>");
+                return;
+            }
+
+            if (photoPart == null || photoPart.getSize() == 0) {
+                out.println("<script>alert('Please upload a photo!');history.back();</script>");
+                return;
+            }
+
+            try (InputStream photoStream = photoPart.getInputStream()) {
+                long length = photoPart.getSize();
+
+                // JDBC Setup
+                Class.forName("oracle.jdbc.driver.OracleDriver");
+                String url = "jdbc:oracle:thin:@localhost:1521:XE";
+                Connection conn = DriverManager.getConnection(url, "SYSTEM", "yash");
+
+                // ✅ Email already exists check
+                PreparedStatement check = conn.prepareStatement("SELECT email FROM data WHERE email = ?");
+                check.setString(1, email);
+                ResultSet rs = check.executeQuery();
+                if (rs.next()) {
+                    out.println("<script>alert('This email is already registered.');history.back();</script>");
+                    check.close();
+                    conn.close();
+                    return;
+                }
+                check.close();
+
+                // ✅ Insert if email not found
+                PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO data (email, first_name, middle_name, last_name, full_name, mobile_number, password, photo) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                );
+                ps.setString(1, email);
+                ps.setString(2, first);
+                ps.setString(3, middle);
+                ps.setString(4, last);
+                ps.setString(5, full);
+                ps.setString(6, mobile);
+                ps.setString(7, password);
+                ps.setBlob(8, photoStream, length);
+
+                int rows = ps.executeUpdate();
+                ps.close();
+                conn.close();
+
+                out.println("<script>alert('Registration successful!');window.location='login.html';</script>");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(); // ✅ logs full error in Eclipse console
+            out.println("<script>alert('Error during registration. Check logs.');history.back();</script>");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "POST only");
+    }
+}
+
+
