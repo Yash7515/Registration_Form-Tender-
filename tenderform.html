@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tender Filling Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background:#f4f6f8;
+      padding: 30px;
+    }
+    form {
+      background: white;
+      padding: 25px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-top: 4px;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <form action="tenderdata" method="post" enctype="multipart/form-data" onsubmit="return validateFiles()">
+    <h2  color:blue>Tender Filling Form</h2>
+
+    <!-- Tenderer Type -->
+    <label>Tenderer Type *</label>
+    <select name="tendererType" required>
+      <option value="">--Select--</option>
+      <option value="Broker">Broker</option>
+      <option value="Purchaser">Purchaser</option>
+      <option value="Wholesaler">Wholesaler</option>
+    </select>
+
+    <label>Full Name *</label>
+    <input type="text" name="fullName" required>
+
+    <label>Address *</label>
+    <textarea name="address1" required></textarea>
+
+    <label>Additional Address</label>
+    <textarea name="address2"></textarea>
+
+    <label>City / Village / Taluka</label>
+    <input type="text" name="city">
+
+    <label>District</label>
+    <input type="text" name="district">
+
+    <label>State</label>
+    <input type="text" name="state">
+
+    <label>Pincode</label>
+    <input type="text" name="pincode" pattern="\d{6}">
+
+    <label>Mobile Number *</label>
+    <input type="text" name="mobile" required pattern="\d{10}">
+
+    <label>Email ID *</label>
+    <input type="email" name="email" required>
+
+    <!-- Radio Buttons -->
+    <label>License Number Available? *</label>
+    <div class="radio-group">
+      <label><input type="radio" name="licenseYN" value="YES" required> YES</label>
+      <label><input type="radio" name="licenseYN" value="NO"> NO</label>
+    </div>
+
+    <label>GST Number Available? *</label>
+    <div class="radio-group">
+      <label><input type="radio" name="gstYN" value="YES" required> YES</label>
+      <label><input type="radio" name="gstYN" value="NO"> NO</label>
+    </div>
+
+    <label>Goods Type *</label>
+    <select name="goodsType" required>
+      <option value="">--Select--</option>
+      <option>Ash</option>
+      <option>Ethanol</option>
+      <option>Fusel Oil</option>
+      <option>Pressmud</option>
+      <option>Sugar</option>
+    </select>
+
+    <label>Goods Demand (e.g. 1000 Ton) *</label>
+    <input type="text" name="goodsDemand" required>
+
+    <label>Sale Rate Per Quantity (e.g. 800 Per Ton) *</label>
+    <input type="text" name="saleRate" required>
+
+    <!-- Document Uploads -->
+    <label>Passport Size Photo (Max 1MB) *</label>
+    <input type="file" name="photo" required>
+
+    <label>Aadhar Copy (Max 1MB) *</label>
+    <input type="file" name="aadhar" required>
+
+    <label>PAN Copy (Max 1MB) *</label>
+    <input type="file" name="pan" required>
+
+    <label>GST Certificate (Max 1MB) *</label>
+    <input type="file" name="gst" required>
+
+    <label>License Certificate (Max 1MB) *</label>
+    <input type="file" name="license" required>
+
+    <label>Remarks</label>
+    <textarea name="remarks"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    function validateFiles() {
+      const maxSize = 1024 * 1024; // 1MB
+      const files = ['photo', 'aadhar', 'pan', 'gst', 'license'];
+      for (let name of files) {
+        let file = document.querySelector(`input[name="${name}"]`).files[0];
+        if (file && file.size > maxSize) {
+          alert(name + " must be less than 1MB");
+          return false;
+        }
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>

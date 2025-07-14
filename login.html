@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background-color: #ffffff;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+
+    h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .captcha-box {
+      margin: 10px 0;
+      font-weight: bold;
+      font-size: 18px;
+      background: #e9ecef;
+      padding: 8px;
+      text-align: center;
+      border: 1px dashed #aaa;
+      border-radius: 4px;
+      letter-spacing: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3 color:blue>User Login</h3>
+   <form method="post" action="logincheck" autocomplete="off">
+      <label>Email ID *</label>
+      <input type="text" name="email" required autocomplete="off">
+
+      <label>Password *</label>
+      <input type="password" name="password" required autocomplete="new-password">
+
+      <label>Captcha *</label>
+      <div class="captcha-box">
+        <script>
+          const code = Math.floor(10000 + Math.random() * 90000);
+          document.write(code);
+          document.cookie = "captcha=" + code;
+        </script>
+      </div>
+      <input type="text" name="captchaInput" required placeholder="Enter captcha shown above">
+
+      <button type="submit">Login</button>
+    </form>
+  </div>
+</body>
+</html>
