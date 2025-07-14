@@ -1,0 +1,66 @@
+package controller;
+
+import java.io.*;
+import java.sql.*;
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
+
+@WebServlet("/viewAllTenders")
+public class ViewAllTendersServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        out.println("<html><head><title>All Tender Records</title>");
+        out.println("<style>");
+        out.println("table { border-collapse: collapse; width: 90%; margin: auto; }");
+        out.println("th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }");
+        out.println("th { background-color: #f2f2f2; }");
+        out.println("</style></head><body>");
+        out.println("<h2 align='center'>All Tender Records</h2>");
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "SYSTEM", "Hardik@2003");
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM tender_data");
+
+            out.println("<table>");
+            out.println("<tr>");
+            out.println("<th>ID</th><th>Tenderer Type</th><th>Full Name</th><th>Mobile</th><th>Email</th><th>Goods Type</th><th>Demand</th><th>Sale Rate</th><th>Action</th>");
+            out.println("</tr>");
+
+            while (rs.next()) {
+                out.println("<tr>");
+                out.println("<td>" + rs.getInt("id") + "</td>");
+                out.println("<td>" + rs.getString("tenderer_type") + "</td>");
+                out.println("<td>" + rs.getString("full_name") + "</td>");
+                out.println("<td>" + rs.getString("mobile") + "</td>");
+                out.println("<td>" + rs.getString("email") + "</td>");
+                out.println("<td>" + rs.getString("goods_type") + "</td>");
+                out.println("<td>" + rs.getString("goods_demand") + "</td>");
+                out.println("<td>" + rs.getString("sale_rate") + "</td>");
+                out.println("<td>");
+                out.println("<a href='editTender?email=" + rs.getString("email") + "'>Edit</a> | ");
+                out.println("<form action='deleteTender' method='post' style='display:inline;'>");
+                out.println("<input type='hidden' name='email' value='" + rs.getString("email") + "'>");
+                out.println("<button type='submit' onclick='return confirm(\"Delete?\")'>Delete</button>");
+                out.println("</form>");
+                out.println("</td>");
+                out.println("</tr>");
+            }
+
+            out.println("</table>");
+            conn.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.println("<p>Error loading data. Check logs.</p>");
+        }
+
+        out.println("</body></html>");
+    }
+}
